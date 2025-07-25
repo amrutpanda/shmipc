@@ -8,13 +8,17 @@ void sighandler(int signum) {runloop = false;}
 int main(int argc, char const *argv[])
 {
     shmipc::SharedMemory shm;
-    std::string s;
-    int n = shm.createStringReadCallback(key,s);
+    int val;
+    int n = shm.createIntReadCallback(key,val);
+    int prev_val = val;
     
     while (runloop)
     {
-        shm.executeStringReadCallback(n);
-        std::cout << "s: " << s << std::endl;
+        shm.executeIntReadCallback(n);
+        std::cout << val << std::endl;
+        if (prev_val > val)
+            break;
+        prev_val = val;
     }
     
     

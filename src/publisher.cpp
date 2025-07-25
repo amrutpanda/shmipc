@@ -10,13 +10,11 @@ int main(int argc, char const *argv[])
 {
     signal(SIGINT, sighandler);
     shmipc::SharedMemory shm;
-    std::string s;
-    int n = shm.createStringWriteCallback(key,s);
     int count = 0;
+    int n = shm.createIntWriteCallback(key,count);
     while (runloop)
     {
-        s = std::to_string(count);
-        // shm.executeStringWriteCallback(n);
+        shm.executeIntWriteCallback(n);
         count++;
     }
     

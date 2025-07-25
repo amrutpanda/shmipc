@@ -53,15 +53,21 @@ namespace shmipc
         void clearSharedObjects();
 
         int createStringReadCallback(const std::string& _varName, std::string& var);
-        int createIntReadCallback(const std::string& _varName, int& var);
-        int createDoubleReadCallback(const std::string& _varName, double& var);
+        int createIntReadCallback(const std::string& _varName, int& var, int size = 1);
+        int createDoubleReadCallback(const std::string& _varName, double& var, int size = 1);
         
         int createStringWriteCallback(const std::string& _varName, std::string& var);
-        int createIntWriteCallback(const std::string& _varName, int& var);
-        int createDoubleWriteCallback(const std::string& _varName, double& var);
+        int createIntWriteCallback(const std::string& _varName, int& var, int size = 1);
+        int createDoubleWriteCallback(const std::string& _varName, double& var, int size = 1);
 
         void executeStringReadCallback(int cbn);
         void executeStringWriteCallback(int cbn);
+
+        void executeIntReadCallback(int cbn);
+        void executeIntWriteCallback(int cbn);
+
+        void executeDoubleReadCallback(int cbn);
+        void executeDoubleWriteCallback(int cbn);
 
         void executeAllReadCallbacks();
         void executeAllWriteCallbacks();
