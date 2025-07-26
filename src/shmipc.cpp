@@ -10,12 +10,14 @@ namespace shmipc
         {
             munmap(_read_shd_obj_ptrs[i],_read_shd_obj_sizes[i]);
             close(_read_shd_obj_fds[i]);
+            shm_unlink(_read_shd_obj_names[i].c_str());
         }
         // cleaning up write shared memory objects.
         for (int i = 0 ; i < _write_shd_obj_names.size() ; ++i)
         {
             munmap(_write_shd_obj_ptrs[i],_write_shd_obj_sizes[i]);
             close(_write_shd_obj_fds[i]);
+            shm_unlink(_read_shd_obj_names[i].c_str());
         }
         
     }
