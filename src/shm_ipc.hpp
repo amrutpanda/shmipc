@@ -201,6 +201,13 @@ namespace shmipc
         return addToReadList(key,ptr,MAX_STRING_SIZE);
     }
 
+    template <typename _Scalar, int _Rows, int _Cols>
+    int SharedMemory::addEigenToReadList(const std::string& key, Eigen::Matrix<_Scalar, _Rows, _Cols>& mat)
+    {
+        return addToReadList(key, &mat.data(), mat.rows() * mat.cols());
+    }
+
+
     template <typename T>
     int SharedMemory::addToReadList(const std::string& key, T& var, int arr_len)
     {
@@ -221,6 +228,13 @@ namespace shmipc
         char* ptr = const_cast<char*>(var.c_str());
         return addToWriteList(key,ptr,MAX_STRING_SIZE);
     }
+
+    template <typename _Scalar, int _Rows, int _Cols>
+    int SharedMemory::addEigenToWriteList(const std::string& key, Eigen::Matrix<_Scalar, _Rows, _Cols>& mat)
+    {
+        return addToWriteList(key, &mat.data(), mat.rows() * mat.cols());
+    }
+
     
     template <typename T>
     int SharedMemory::addToWriteList(const std::string& key, T& var, int arr_len)
@@ -239,10 +253,24 @@ namespace shmipc
         return _write_inds.size() - 1;
     }
 
+
+
     void SharedMemory::executeReadCallback(int cbn)
     {
         switch (_read_data_types[cbn])
         {
+        case STRING:
+            {
+                SharedData<char>* _ptr = static_cast<SharedData<char>*>(_read_shd_data_structs[cbn]);
+                std::atomic curr = _ptr->flag->load(std::memory_order_acquire);
+                if (curr == 0)
+                    strncpy(_ptr->_dptr, _ptr->buf1, MAX_STRING_SIZE);
+                    // memcpy(_ptr->_dptr, _ptr->buf1, _ptr->_nele * sizeof(int));
+                else
+                    strncpy(_ptr->_dptr, _ptr->buf2, MAX_STRING_SIZE);
+                    // memcpy(_ptr->_dptr, _ptr->buf2, _ptr->_nele * sizeof(int));
+                break;
+            }
         case INT:
             {
                 SharedData<int>* _ptr = static_cast<SharedData<int>*>(_read_shd_data_structs[cbn]);
@@ -288,6 +316,20 @@ namespace shmipc
     {
         switch (_write_data_types[cbn])
         {
+        case STRING:
+            {
+                SharedData<char>* _ptr = static_cast<SharedData<char>*>(_write_shd_data_structs[cbn]);
+                std::atomic curr = _ptr->flag->load(std::memory_order_acquire);
+                std::atomic next = 1 - curr;
+                if (next == 0)
+                    strncpy( _ptr->buf1, _ptr->_dptr, MAX_STRING_SIZE);
+                else
+                    strncpy(_ptr->buf2,_ptr->_dptr, MAX_STRING_SIZE);
+
+                std::atomic_thread_fence(std::memory_order_release);
+                _ptr->flag->store(next);
+                break;
+            }
         case INT:
             {
                 SharedData<int>* _ptr = static_cast<SharedData<int>*>(_write_shd_data_structs[cbn]);
